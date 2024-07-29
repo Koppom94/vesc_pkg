@@ -1,9 +1,15 @@
 # VESC Packages
 
-This repository contains packages that show up in the package store in VESC Tool. A VESC Package consists of:
+This repository contains packages that show up 
+
+
+
+in the package store in VESC Tool. A VESC Package consists of:
 
 * A description, which can include formatted text and images.
-* An optional LispBM-script with optional includes.
+* An optional LispBM-script with 
+ 
+.
 	- The includes can also contain one or more compiled C libraries.
 * An optional QML-file.
 
