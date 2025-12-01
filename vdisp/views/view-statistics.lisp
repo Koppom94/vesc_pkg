@@ -7,28 +7,29 @@
     (var y-offs 0)
 
     ; Quarter guage buffer (re-used for each quadrant to save memory)
-    (def buf-gauge (img-buffer 'indexed16 buf-size buf-size))
-    (def buf-efficiency (img-buffer 'indexed4 92 55))
-    (def buf-trip (img-buffer 'indexed4 92 55))
-    (def buf-range (img-buffer 'indexed4 92 55))
+    (def buf-gauge (img-buffer dm-pool 'indexed16 buf-size buf-size))
+    (def buf-efficiency (img-buffer dm-pool 'indexed4 92 55))
+    (def buf-trip (img-buffer dm-pool 'indexed4 92 55))
+    (def buf-range (img-buffer dm-pool 'indexed4 92 55))
 
     (defun on-btn-0-pressed () (def state-view-next (previous-view)))
-    (defun on-btn-2-pressed () {
+    (defun on-btn-2-pressed () (if (not config-units-switching-enable) nil
+    {
         (setting-units-cycle)
         (setix view-previous-stats 3 'stats-km) ; Re-draw units
-    })
+    }))
     (defun on-btn-3-pressed () (def state-view-next (next-view)))
 
     ; Render menu
-    (view-draw-menu 'arrow-left nil "UNITS" 'arrow-right)
+    (view-draw-menu 'arrow-left nil (if (not config-units-switching-enable) nil "UNITS") 'arrow-right)
     (view-render-menu)
 
     ; Render gauge background
-    (var img (img-buffer 'indexed2 (* buf-size 2) 2))
+    (var img (img-buffer dm-pool 'indexed2 (* buf-size 2) 2))
     (img-line img spacing 0 (- (* buf-size 2) spacing -1) 0 1 '(thickness 2))
     (disp-render img (+ x-offs 2) (+ y-offs buf-size 2) '(0x000000 0x1b1b1b))
 
-    (var img (img-buffer 'indexed2 2 (* buf-size 2)))
+    (var img (img-buffer dm-pool 'indexed2 2 (* buf-size 2)))
     (img-line img 0 spacing 0 (- (* buf-size 2) spacing -1) 1 '(thickness 2))
     (disp-render img (+ x-offs buf-size 2) (+ y-offs 2) '(0x000000 0x1b1b1b))
 
@@ -109,7 +110,6 @@
     (var padding 8)
     (var x-offs 0)
     (var y-offs 0)
-    (var colors-text-aa (list 0x000000 0x4f514f 0x929491 0xfbfcfc))
 
     (if (not-eq stats-amps-now (first view-previous-stats)) {
         ; Max Amps Regen
@@ -153,7 +153,6 @@
 
 
     (if (not-eq stats-km (ix view-previous-stats 3)) {
-        (var colors-text-aa '(0x000000 0x4f514f 0x929491 0xfbfcfc))
         (disp-render buf-efficiency 215 12 colors-text-aa)
 
         (disp-render buf-trip 215 84 colors-text-aa)

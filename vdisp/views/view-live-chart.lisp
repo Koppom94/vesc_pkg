@@ -14,13 +14,14 @@
 (defun view-init-chart () {
     (def view-counter 0)
     (def value-avg 0)
+    (def values-per-point-previous 1)
     (def view-updated true)
-    (def buf-chart-title (img-buffer 'indexed4 240 30))
-    (def buf-chart-value (img-buffer 'indexed4 120 25))
-    (def buf-chart-value-min (img-buffer 'indexed4 120 25))
-    (def buf-chart-value-max (img-buffer 'indexed4 120 25))
+    (def buf-chart-title (img-buffer dm-pool 'indexed4 240 30))
+    (def buf-chart-value (img-buffer dm-pool 'indexed4 120 25))
+    (def buf-chart-value-min (img-buffer dm-pool 'indexed4 120 25))
+    (def buf-chart-value-max (img-buffer dm-pool 'indexed4 120 25))
 
-    (def buf-chart (img-buffer 'indexed2 240 128))
+    (def buf-chart (img-buffer dm-pool 'indexed2 240 128))
     (var chart-value-max 5)
     (var chart-labels (list "Duty Cycle" "Speed" "KW" "Angle" "Amps" "Battery SOC"))
     (txt-block-c buf-chart-title (list 0 1 2 3) 120 0 font24 (to-str (ix chart-labels chart-value-index)))
@@ -65,11 +66,16 @@
 
     (var value-now (ix chart-items chart-value-index))
 
-    (def vales-per-point (if (< view-counter 45) 1 16))
-    (if (eq (mod view-counter vales-per-point) 0) {
+    (def values-per-point (if (< view-counter 45) 1 16))
+    (if (eq (mod view-counter values-per-point) 0) {
         (def view-updated true)
         (setq value-avg (+ value-avg value-now))
-        (setq live-chart-values (append-value live-chart-values (/ value-avg vales-per-point) 45))
+        ; Adjust value-avg when value-per-point changes
+        (if (not-eq values-per-point-previous values-per-point) {
+            (def value-avg (* value-now values-per-point))
+            (def values-per-point-previous values-per-point)
+        })
+        (setq live-chart-values (append-value live-chart-values (/ value-avg values-per-point) 45))
         (def value-avg 0)
 
         (if (> (length live-chart-values) 10) {
@@ -97,7 +103,6 @@
         (def view-updated false)
         (disp-render buf-chart 40 60 '(0x000000 0x0000ff))
 
-        (var colors-text-aa '(0x000000 0x4f514f 0x929491 0xfbfcfc))
         (disp-render buf-chart-value 200 35 colors-text-aa)
         (disp-render buf-chart-value-min 0 188 colors-text-aa)
         (disp-render buf-chart-value-max 0 35 colors-text-aa)

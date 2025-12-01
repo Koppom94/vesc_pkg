@@ -12,7 +12,7 @@ Contributions are welcome and appreciated, please refer to [Contributing](CONTRI
 
 ## Building
 ### Requirements
-- `gcc-arm-embedded` vesrsion 13 or higher
+- `gcc-arm-embedded` version 13 or higher
 - `make`
 - `vesc_tool`
 
@@ -21,7 +21,15 @@ To build the package, run:
 make
 ```
 
+Note a new beta (as of writing this, unreleased) version of `vesc_tool` is needed for the above to work. To build the package with the current / old `vesc_tool` version, use:
+```sh
+make OLDVT=1
+```
+
 If you don't have `vesc_tool` in your `$PATH` (but you have, for example, a downloaded `vesc_tool` binary), you can specify the `vesc_tool` to use:
 ```sh
 make VESC_TOOL=/path/to/vesc_tool
 ```
+
+## Documentation
+[Development Documentation](doc/index.md)

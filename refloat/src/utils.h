@@ -19,7 +19,10 @@
 
 #include "vesc_c_if.h"
 
+#include <math.h>
 #include <stdint.h>
+
+#define ERPM_MOVING_THRESHOLD 10.0f
 
 #define unused(x) (void) (x)
 
@@ -56,13 +59,23 @@
 // Declaration for the SEMD_APP_DATA macro, definition needs to be in main.c.
 void send_app_data_overflow_terminate();
 
+#define SEND_BUF_MAX_SIZE 511
+
 /**
  * DRY macro to check the buffer didn't overflow and send the app data.
  */
 #define SEND_APP_DATA(buffer, buf_size, ind)                                                       \
     do {                                                                                           \
+        _Static_assert(                                                                            \
+            buf_size <= SEND_BUF_MAX_SIZE, "Data to send too long, won't fit into send buffer."    \
+        );                                                                                         \
         if (ind > buf_size) {                                                                      \
-            log_error("%s: App data buffer overflow, terminating.", __func__);                     \
+            log_error(                                                                             \
+                "%s: App data buffer overflow (buffer: %u, data: %u), terminating.",               \
+                __func__,                                                                          \
+                buf_size,                                                                          \
+                ind                                                                                \
+            );                                                                                     \
             /* terminate the main thread, the memory has just been corrupted by buffer overflow */ \
             send_app_data_overflow_terminate();                                                    \
         }                                                                                          \
@@ -107,7 +120,7 @@ float clampf(float value, float min, float max);
 /**
  * Rate-limits @p value towards @p target by an amount of maximum value of @p step.
  *
- * If the difference between @p value and @p target is greated than step, @p
+ * If the difference between @p value and @p target is greater than step, @p
  * value is increased or decreased (if @p target is greater or less than @p
  * value respectively) by @p step. Otherwise, @p value is set to @p target.
  *
@@ -116,3 +129,12 @@ float clampf(float value, float min, float max);
  * @param step A maximum unit of change of @p value.
  */
 void rate_limitf(float *value, float target, float step);
+
+void smooth_rampf(
+    float *value,
+    float *ramped_step_size,
+    float target,
+    float step,
+    float smoothing_factor,
+    float smooth_center_window
+);

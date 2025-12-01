@@ -1,7 +1,7 @@
 # Trick and Trail VESC Package
 by Mike Silberstein (send questions, comments, requests to izzyvesc@gmail.com)
 
-Trick and Trail Package was developed based on Float Package 1.2 by Surfdado and Niko for self-balanced boards. It departs from the traditional PID control scheme that is rooted in the balance robot design. This is replaced with a user defined, current output curve that is based on board pitch. This allows for an infinite number of throttle/braking curves that gives the user the ability to truly tune the board how they want.
+Trick and Trail Package was developed based on Float Package 1.2 by Surfdado and Nico for self-balanced boards. It departs from the traditional PID control scheme that is rooted in the balance robot design. This is replaced with a user defined, current output curve that is based on board pitch. This allows for an infinite number of throttle/braking curves that gives the user the ability to truly tune the board how they want.
 
 This package has been improved thanks to the contributions of Lukas Hrazky with Refloat.
 
@@ -17,39 +17,170 @@ This package has been improved thanks to the contributions of Lukas Hrazky with 
 * Dynamic Stability - faster board response at higher speeds or with a remote.
 * Alternative proportional gain user inputs for pitch.
 * Optional independent brake curve for pitch.
-* High Duty Haptic Buzz - high speed warning.
-* High Current Haptic Buzz - instant, high torque warning.
+* High Duty FOC Tone - high speed warning.
+* High Current FOC Tone - instant, high torque warning.
 
 ### Default Settings
-Default settings are based on 20s battery, Hypercore (Future Motion motor), and Little Focer v3.1 set up. These are similar to the settings I ride for trails. One exception is surge which is disabled. Here are more details on the default settings:
+Default settings are based on 20s battery, Hypercore (Future Motion motor), and Little Focer v3.1 set up. Here are more details on the default settings:
 
-* Pitch Tune - The current pitch tune is loose close to the setpoint but tightens quickly at higher pitch angles.
-  * For a street tune you may want the tune to be tighter close to the setpoint. Increase Kp0, Pitch 1 Current, and Pitch 2 Current. You could also decrease Pitch 1 and Pitch 2 angles.
-  * For a trick tune you may want it to be looser at higher pitch angles. Increase Pitch 3 angle or decrease Pitch 3 Current.
-* Roll Tune - The current roll tune is very loose and moderate for easy, deep carving.
-  * To make the roll tighter and more race-like, decrease Level 2 Roll Angle.
-  * To make the tune less aggressive decrease Roll Kp.
-  * To make the tune less agile at low speed reduce the low speed maximum scaler.
-  * To adjust the agility at high speed change the high speed maximum scaler.
-* Yaw Tune - The current yaw tune is loose and moderately aggressive
-  * To make the yaw tighter and more race-like, decrease Level 1 and Level 2 Yaw Angles.
-  * To make the tune less aggressive decrease Yaw Kp.
+* Pitch Tune - The default pitch tune is a balance for street and trails
+  * Increase and decrease Mahoney kp to find your preference, recommended 1 to 1.5, with 1.5 having a softer more delayed feel
+  * Current 2 (default pitch angle 1 deg) will affect nose height in light demand (i.e. cruising flat ground)
+  * Current 3 (default pitch angle 1.5 deg) will affect nose height in medium demand (i.e. slight uphills/downhills)
+  * Current 4 (default pitch angle 2 deg) will affect nose height in high demand (i.e. steep uphills/downhills)
+  * Angle 5 (default current 150A) can be decreased to make the board more aggressive and surge more readily (better for bonks). Higher values will make the high current response softer which can be smoother for rough trails.
+  * Current 1 (default pitch angle 0.5 deg) and Kp0 can be increaced to make the board tighter around the setpoint
+  * Increase or decrease Pitch Rate Kp to adjust nose stiffness
+* Roll Tune - The default roll tune is very loose and moderate for easy, deep carving.
+  * To make the roll tighter and more race-like, decrease Level 2 and Level 3 Roll Angle.
+  * To make the roll response less aggressive decrease Roll Kp.
+  * To make the roll response less agile at low speed reduce the Roll Maximum Scaler.
+* Yaw Tune - The default yaw tune is reduced because minor offsets in the yaw gyro can cause very high yaw to be measured. Check you gyro offsets first to confirm they are zeroed.
+  * Increase Yaw Kp Level 2 to make the board more "skatey" or "icey" for more rapid carving (high agility). A little goes a long way. Start with 0.1.
 * High Current
-  * High current conditions are based on 150 peak amps, 30 battery amps, and hypercore motor.
-  * Changes must be made for higher current motors like the cannoncore and superflux.
+  * High current conditions are based on 150 peak amps, 40 battery amps, and hypercore motor.
+  * Adjustments must be made based on your motor configuration. See the wiki for more details. Linked above.
 * Surge 
   * Disabled by default for safety.
   * Set your high current section first.
 * Traction Control
-  * Should work well for most boards. Light riders on powerful boards may need to increase Start Condition to prevent nuisance trips.
-  * Decrease End Condition for smoother landings but beware going too low.
-* Haptic Buzz
-  * Activated for high duty and high current
-  * Riders with cannoncore or superflux motors should disable high current haptic buzz until you correct the high current conditions.
+  * Decrease Transition Condition and increase End Condition for looser landings and less wheel spin.
+  * Traction Braking disabled by default.
+* FOC Play Tones
+  * Disabled by default because of potential issues with Absolute Max Motor Current. See warning in the help text.
+  * Riders should set high current conditions before using high current FOC tones.
 
 For more instructions on setting up your board please refer to the [Set Up Guide.](https://github.com/Izzygit/TrickandTrailReleases/wiki/Set-Up-Guide) https://github.com/Izzygit/TrickandTrailReleases/wiki/Set-Up-Guide
 
 ## Change Log
+### 1.6
+* **This version requires 6.05+ firmware to function properly**
+* _Features_
+  * New Feature - Yaw Rate Kp in the Yaw menu
+    * New gyro behavior thanks to work from Nico Aleman and @michalmo
+    * New math handling the IMU gyro changes the nose stiffness behavior of Pitch Rate Kp and new feature Yaw Rate Kp
+    * Added new parameters Yaw Rate Kp and Yaw Rate Braking Kp
+    * Higher Pitch Rate Kp increases the stiffness of the nose under all conditions
+    * Higher Yaw Rate Kp will increase nose stiffness while applying yaw (i.e. carving)
+    * Yaw Rate Kp of 1 produces the pre-1.6 gyro behavior.
+    * Yaw Rate Kp of 0 removes yaw stiffness.
+  * Traction Control
+    * Added feature Tracking ERPM to better differentiate rider speed from motor ERPM
+    * Added Tracking ERPM Rate Limit parameter limits the rate that Tracking ERPM can change
+    * Added Tracking ERPM Exclusion Rate parameter excludes high acceleration rates from Tracking ERPM
+    * Added Tracking ERPM Margin parameter defines the difference between actual ERPM and Tracking ERPM before traction control will engage
+    * Default Start Acceleration changed to 35 ERPM/ms
+    * Default ERPM Filter Frequency to 25 Hz
+    * Replaced Start Condition with Tracking ERPM in AppUI debug
+  * AppUI Overhaul
+    * Debug information overhaul
+      * Removed tune debug
+      * Added pitch, roll. stability, and current debugs
+      * Added yaw rate and yaw rate current demand to yaw debug
+    * New trip data
+      * Removed power average
+      * Added distance in miles
+      * Added max carve chain (minimum yaw change 100 deg/s, every 3 seconds)
+      * Added carves per mile
+      * Added average yaw during carves
+      * Added average roll during carves
+      * Added air time counter (as determined by traction control with minimum air time of 100 ms)
+      * Added max air time (as determined by traction control with minimum air time of 100 ms)
+      * Added toggle to TNT Cfg->Specs, Reset Trip Data on Write, to do so when toggled
+  * Traction Control Braking
+    * Added parameter Off Delay, which keeps traction braking active after the off signal has been receive for smoother downhill traction control
+    * 0 by default, 5 ms recommended
+* _Fixes/Improvements_
+  * Added an exponential moving average (EMA) filter to current output normalized to the IMU sample rate
+  * Added new parameter EMA Filter Adjustment Factor to adjust the new EMA filter
+  * Changed default package frequency to 10,000Hz
+  * Renamed 'inputtilt_interpolated' to 'setpoint' in the remote variables
+  * Yaw - Added a hard coded correction factor to yaw change to account for higher yaw change that resulted at higher package loop frequencies
+  * Surge - Reduced default max angle to 1.5 and setpoint margin to 2.5 to produce a nose lift that is easier to handle
+  * Changed the default high current setting to 40 battery amps from 30.
+  * Changed the default pitch tune to work with a lower Mahoney kp (recommended 1 to 1.5)
+  * Changed the step size for pitch current and angle parameters to be smaller for easier tuning adjustment
+  * Changed the default low pass filter for pitch to 35
+  * Disabled the kalman filter for pitch by default
+  * Reduced default high current foc tone volume to 5 V
+  * Increased default stability ramp rate up to 100 %/s from 25 %/s
+
+### 1.5
+* **This version requires 6.05 firmware to function properly**
+* _Fixes/Improvements_
+  * Testing and support for higher package loop frequencies.
+    * Traction Control Start Acceleration help text updated.
+    * Traction Control Scale ERPM help text updated.
+    * High Current Filter Frequency help text updated.
+    * Changed parameter name Specs->Loop Rate to Package Loop Frequency. Updated help text.
+  * Traction Control Braking
+    * Added new conditions to engage traction control braking
+      * Vq and Iq comparison to confirm FOC braking
+      * Battery current less than zero to confirm regeneration
+    * Removed start and end delay parameters as they are no longer required
+    * Changed AppUI debug to show battery current and end conditions after 1 second of engagement
+    * Added new end condtions to AppUI debug
+  * Traction Control
+    * Changed default start acceleration from 29 ERPM/ms to 50 ERPM/ms to allow for higher package loop frequencies by default.
+    * Added Hold Period configurable parameter which allows the user to control the period between traction control engagements
+  * Surge/High Current
+    * Added Current Filter Frequency parameter to allow the user to change the low pass filter frequency on motor current which is necessary for for higher package loop frequencies
+    * Changed default Current Filter Frequency from 3 to 5 Hz.
+    * Changed default Min ERPM for surge from 1500 to 2000.
+  * Increased the voltage threshold that designates a charging situation from 0.1V to 0.3V to avoid nuisance activations
+  * AppUI will now display the stop condition as TRACTN CTRL if traction control is active when the board is deactivated
+
+### 1.4
+* **This version requires 6.05 firmware to fuction properly**
+* **Version 1.4 parameters are not compatible with v1.3 and will be set to default. Screenshot your tunes to save.**
+* _Features_
+  * New Feature - Traction Control Braking (beta)
+    * Utilizes VESC 'set brake' fuction to apply brake current with no wheel spin
+    * Parameter that allows traction braking only when a minimum nose down angle is requested via remote
+    * Parameter for minimum ERPM
+  * Traction Control Improvements
+    * Added low pass filter to ERPM which is used to calculate motor acceleration.
+    * New parameter to adjust low pass filter frequency.
+    * Now End Conditions consist of Transition, End and Hold conditions
+    * Absolute value of motor acceleration must be less than Transition Condition to allow end condition
+    * Absolute value of motor acceleration must be greater than End Condition to end traction control
+    * Absolute value of motor acceleration must be less than Hold Condition to allow another traction control engagement.
+    * New parameter allows for the termination of traction control when a pitch angle threshold is met.
+    * Removed intermediate time outs and changed traction control to 1 second time out.
+    * Added conditions for traction braking.
+  * FOC Play Tones
+    * FOC play tones now replaces haptic buzz.
+    * Available in the Safety Alerts menu.
+    * Be sure to read the warnings in the help text concerning Abs Max Current.
+    * New parameters allow for frequency and voltage (volume) adjustment for high current and high duty tones
+    * Beeper is now replaced with FOC play tones with the following alerts implemented
+      * Duty cycle within 10% of tiltback duty cycle- fast triple beep, ascending pitch
+      * High voltage - slow triple beep, ascending pitch
+      * Low voltage - slow triple beep, descending pitch
+      * High motor temp - slow triple beep, single pitch
+      * High fet temp - slow triple beep, single pitch
+      * New feature fet/motor temp recovery, when 10 degrees below tiltback temperature- fast triple beep, ascending pitch
+      * New features Mid/Low Range Warnings - slow triple beep, descending pitch
+      * Footpad disengaged above 2000 ERPM - continuous single pitch
+      * On write configuration - fast triple beep, single pitch (only when idle)
+      * Idle beeper after 30 minutes - slow double beep, single pitch
+      * New feature charged alert - slow double beep, single pitch
+    * New parameter to adjust beeper volume.
+    * Added more Last Beep Reasons to AppUI to identify the new beep features.
+  * Simple Start now has a configurable delay after the board has been disengaged, Simple Start Delay, in Startup
+  * Quick Stop now has an on/off toggle, configurable ERPM and pitch angle, in Stop
+* _Fixes/Improvements_
+  * Continued code refactoring
+  * Changed default pitch tune to Pitch Kp0=20, Pitch Kp Rate=0.6, Pitch 1 Current=100, Pitch 1=3.
+  * Renamed menu Safety Tiltback/Alerts to Safety Alerts and reorganized
+    * High voltage and low voltage thresholds moved from Specs to Safety Alerts
+    * Enable beep on sensor fault moved from Specs to Safety Alerts
+    * Enable beep (general) moved from Specs to Safety Alerts
+  * Footpad sensor ADC1 and ADC2 voltage thresholds moved to Startup menu.
+  * Added a list of end conditions to AppUI for Surge and Traction Control debugs.
+  * Added a timer to AppUI to show the last time Traction Control Braking was used.
+  * Increased ERPM required to engage idle brake to 10.
+
 ### 1.3
 * **Version 1.3 parameters are not compatible with v1.2 and will be set to default. Screenshot your tunes to save.**
 * Code refactored thanks to contributions from Lukas Hrazky, author of Refloat.
